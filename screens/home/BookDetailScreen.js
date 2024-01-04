@@ -9,7 +9,6 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  Linking,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -17,51 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { rh, rw } from '../../responsive';
 import * as FileSystem from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
-import * as IntentLauncher from 'expo-intent-launcher';
-import * as Sharing from 'expo-sharing';
-
-const downloadAndOpenPDF = async (pdfUrl, fileName) => {
-  try {
-    // Check if the Downloads directory exists, if not, create it
-    const downloadsDir = FileSystem.documentDirectory + 'Download';
-    const downloadsDirInfo = await FileSystem.getInfoAsync(downloadsDir);
-
-    if (!downloadsDirInfo.exists || !downloadsDirInfo.isDirectory) {
-      await FileSystem.makeDirectoryAsync(downloadsDir, {
-        intermediates: true,
-      });
-    }
-
-    // Create a download resumable
-    const downloadResumable = FileSystem.createDownloadResumable(
-      pdfUrl,
-      downloadsDir + '/' + fileName
-    );
-
-    const { uri } = await downloadResumable.downloadAsync();
-
-    console.log('File downloaded to:', uri);
-
-    // Use IntentLauncher to open the PDF
-    FileSystem.getContentUriAsync(uri).then((cUri) => {
-      if (Platform.OS === 'ios') {
-        Sharing.shareAsync(cUri.uri);
-      } else {
-        if (Platform.OS === 'android') {
-          IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-            data: cUri.uri,
-            flags: 1,
-            type: 'application/pdf',
-          });
-        }
-      }
-    });
-
-    return uri;
-  } catch (error) {
-    console.error('Error downloading or opening PDF:', error);
-  }
-};
 
 const BookDetailScreen = ({ route }) => {
   const { book } = route.params;
